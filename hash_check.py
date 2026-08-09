@@ -3,7 +3,7 @@ r"""
 hash_check_menu.py — Interactive menu version of the transfer-verification tool.
 
 Just run it, no command-line arguments needed:
-    python hash_check_menu.py
+    python hash_check.py
 
 You'll get a menu:
     1. Generate hash file (point it at a folder)
