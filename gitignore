@@ -1,0 +1,10 @@
+# Byte-compiled / cache
+__pycache__/
+*.pyc
+
+# Generated output from running the tool - don't commit your own hash lists
+*.txt
+
+# OS junk
+.DS_Store
+Thumbs.db
