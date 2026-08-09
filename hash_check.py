@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 r"""
-hash_check_menu.py — Interactive menu version of the transfer-verification tool.
+hash_check.py — Interactive menu version of the transfer-verification tool.
 
 Just run it, no command-line arguments needed:
     python hash_check.py
