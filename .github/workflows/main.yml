@@ -1,9 +1,7 @@
 # Build standalone executables (Windows/macOS/Linux) and upload to release
 name: Build and Release Executables
-
 permissions:
   contents: write
-
 on:
   push:
     tags:
@@ -11,11 +9,14 @@ on:
   release:
     types: [published]
   workflow_dispatch:
-
+    inputs:
+      tag:
+        description: 'Release tag to build/upload against (e.g. v1.2.3). Required for manual runs.'
+        required: true
+        type: string
 concurrency:
   group: build-${{ github.ref }}
   cancel-in-progress: true
-
 jobs:
   validate:
     name: Validate script
@@ -23,12 +24,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Set up Python 3.11
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-
       - name: Check syntax
         run: python -m py_compile hash_check.py
 
@@ -44,32 +43,25 @@ jobs:
             os-name: Windows
             output-name: hash-check.exe
             artifact-name: hash-check-windows-x64.exe
-
           - os: macos-latest
             os-name: macOS
             output-name: hash-check
             artifact-name: hash-check-macos-x64
-
           - os: ubuntu-latest
             os-name: Linux
             output-name: hash-check
             artifact-name: hash-check-linux-x64
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Set up Python 3.11
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-
       - name: Install PyInstaller
         run: pip install pyinstaller
-
       - name: Build executable
         run: pyinstaller --onefile --name hash-check hash_check.py
-
       - name: Verify executable
         run: |
           if [ ! -f "dist/${{ matrix.output-name }}" ]; then
@@ -78,7 +70,6 @@ jobs:
           fi
           echo "✅ Built: ${{ matrix.output-name }}"
         shell: bash
-
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -92,28 +83,31 @@ jobs:
     needs: build
     if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'release' || github.event_name == 'workflow_dispatch'
     env:
-      TAG_NAME: ${{ github.event.release.tag_name || github.ref_name }}
+      TAG_NAME: ${{ github.event.inputs.tag || github.event.release.tag_name || github.ref_name }}
     steps:
+      - name: Verify tag looks valid
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -z "${{ github.event.inputs.tag }}" ]; then
+            echo "❌ ERROR: workflow_dispatch runs require a 'tag' input (e.g. v1.2.3)."
+            exit 1
+          fi
+          echo "Using tag: $TAG_NAME"
+        shell: bash
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
           path: release-files
-
       - name: List artifacts
         run: find release-files -type f -exec ls -lh {} \;
-
       - name: Flatten downloaded artifacts
         run: |
           mkdir -p release-files-flat
           # Copy every file found in the downloaded artifact folders into a single flat folder
           find release-files -type f -exec cp {} release-files-flat/ \;
-
       - name: List flattened files
         run: ls -lh release-files-flat || true
-
       - name: Upload to Release
         uses: ncipollo/release-action@v1
         with:
