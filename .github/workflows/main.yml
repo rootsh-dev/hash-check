@@ -105,12 +105,21 @@ jobs:
       - name: List artifacts
         run: find release-files -type f -exec ls -lh {} \;
 
+      - name: Flatten downloaded artifacts
+        run: |
+          mkdir -p release-files-flat
+          # Copy every file found in the downloaded artifact folders into a single flat folder
+          find release-files -type f -exec cp {} release-files-flat/ \;
+
+      - name: List flattened files
+        run: ls -lh release-files-flat || true
+
       - name: Upload to Release
         uses: ncipollo/release-action@v1
         with:
           tag: ${{ env.TAG_NAME }}
-          artifacts: release-files/**/*
+          artifacts: release-files-flat/*
           allowUpdates: true
           artifactErrorsFailBuild: true
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
