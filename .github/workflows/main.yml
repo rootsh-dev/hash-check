@@ -104,8 +104,16 @@ jobs:
       - name: Flatten downloaded artifacts
         run: |
           mkdir -p release-files-flat
-          # Copy every file found in the downloaded artifact folders into a single flat folder
-          find release-files -type f -exec cp {} release-files-flat/ \;
+          # Each artifact was downloaded into a folder named after its artifact-name
+          # (e.g. release-files/hash-check-macos-x64/hash-check). Rename each file to
+          # match its artifact folder name so same-named binaries (macOS/Linux both
+          # produce a plain "hash-check") don't collide and overwrite each other.
+          for dir in release-files/*/; do
+            artifact_name="$(basename "$dir")"
+            find "$dir" -type f | while read -r f; do
+              cp "$f" "release-files-flat/${artifact_name}"
+            done
+          done
       - name: List flattened files
         run: ls -lh release-files-flat || true
       - name: Upload to Release
