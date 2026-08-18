@@ -1,6 +1,9 @@
 # Build standalone executables (Windows/macOS/Linux) and upload to release
 name: Build and Release Executables
 
+permissions:
+  contents: write
+
 on:
   push:
     tags:
