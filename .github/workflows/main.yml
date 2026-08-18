@@ -30,7 +30,6 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
-          cache: 'pip'
 
       - name: Upgrade pip & install base build tools
         run: python -m pip install --upgrade pip build wheel setuptools
@@ -71,7 +70,6 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-          cache: 'pip'
 
       - name: Upgrade pip and install build tools
         run: python -m pip install --upgrade pip build wheel setuptools
